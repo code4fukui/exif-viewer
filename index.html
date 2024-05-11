@@ -1,0 +1,110 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<title>EXIF viewer</title>
+<meta property="og:title" content="EXIF viewer">
+<meta name="twitter:card" content="summary_large_image"/>
+<!--
+<meta name="twitter:image" content="https://code4fukui.github.io/jpgbeauty/jpgbeauty.png">
+<meta property="og:image"  content="https://code4fukui.github.io/jpgbeauty/jpgbeauty.png">
+-->
+<script type="module">
+import { waitDropFiles } from "https://code4sabae.github.io/js/waitDropFiles.js";
+import { readAsArrayBufferAsync } from "https://code4sabae.github.io/js/readAsArrayBufferAsync.js";
+import { ImageUtil } from "https://code4fukui.github.io/ImageUtil/ImageUtil.js";
+import { EXIF } from "https://taisukef.github.io/exif-js/EXIF.js";
+
+const makeTableByJSON = (data) => {
+  const c = (tag) => document.createElement(tag);
+  const tbl = c("table");
+  /*
+  const tr0 = c("tr");
+  tbl.appendChild(tr0);
+  for (let i = 0; i < csv[0].length; i++) {
+    const th = c("th");
+    tr0.appendChild(th);
+    th.textContent = csv[0][i];
+  }
+  */
+  for (const name in data) {
+    const tr = c("tr");
+    tbl.appendChild(tr);
+    const th = c("th");
+    th.textContent = name;
+    tr.appendChild(th);
+
+    const td = c("td");
+    tr.appendChild(td);
+    const s = data[name];
+    if (typeof s == "string" && (s.startsWith("http://") || s.startsWith("https://"))) {
+      const a = c("a");
+      a.href = a.textContent = s;
+      td.appendChild(a);
+    } else if (s instanceof Number) {
+      td.textContent = s.numerator + " / " + s.denominator;
+      /*
+      if (s.denominator) {
+        td.textContent = s.toString();
+      } else {
+        td.textContent = s.numerator + " / " + s.denominator;
+      }
+      */
+    } else {
+      td.textContent = s;
+    }
+    console.log(name, s);
+  }
+  return tbl;
+};
+
+window.onload = async () => {
+  for (;;) {
+    const items = await waitDropFiles(divmain);
+    const files = [];
+    for (const item of items) {
+      // console.log(item.type); // ignore item.type in Windows
+      const name = item.file.name.toLowerCase();
+      if (!(name.endsWith(".jpg") || name.endsWith(".jpeg"))) {
+        alert("ファイル形式が違います。JPGファイルかPNGファイルをドロップしてください。")
+        return;
+      }
+      try {
+        const file = item.file;
+        const bin = await readAsArrayBufferAsync(file);
+        const exif = EXIF.readFromBinaryFile(bin);
+        console.log(exif);
+        divmain.innerHTML = "";
+        const tbl = makeTableByJSON(exif);
+        divmain.appendChild(tbl);
+      } catch (e) {
+        console.log(e);
+        alert(`JPGファイル"${item.file.name}"の読み込みに失敗しました。データが正常かご確認ください。\n${e}` );
+        return;
+      }
+    }
+  }
+};
+</script>
+</head>
+<body>
+  
+<div class="jumbotron">
+  <h1 class="display-4">EXIF viewer</h1>
+  <p class="lead">JPGファイル内のEXIF情報を表示します</p>
+</div>
+
+<div class="mx-5">
+  <div id="divmain" class="border px-5 mx-auto pt-3 pb-3">
+  JPGファイルをドロップしてください
+  </div>
+</div>
+
+<footer class="text-muted">
+  <div class="container my-4 mx-0">
+  <p>Design: <a href="https://getbootstrap.com/">Bootstrap</a> by <a href="https://twitter.com/mdo">@mdo</a></p>
+  <p>App: <a href=https://github.com/code4fukui/exif-viewer/>src on GitHub</a></p>
+  <p>Related: <a href=https://code4fukui.github.io/jpgbeauty/>jpgbeauty</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
