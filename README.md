@@ -1,5 +1,7 @@
 # exif-viewer
 
+> 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
+
 EXIF viewer is a tool to display EXIF information from JPEG files.
 
 ## Demo
