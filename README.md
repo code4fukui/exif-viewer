@@ -20,4 +20,4 @@ EXIF viewer is a tool to display EXIF information from JPEG files.
 2. The EXIF data will be displayed in a table
 
 ## License
-This project is licensed under the MIT License.
+MIT License — see [LICENSE](LICENSE).
